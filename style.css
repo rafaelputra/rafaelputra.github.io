@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Waiting+for+the+Sunrise');
+
+body {
+	box-sizing: border-box;
+	font-family: 'Waiting For The Sunrise', cursive;
+	font-weight: bold;
+	font-size: 30px;
+	letter-spacing: 6px;
+}
