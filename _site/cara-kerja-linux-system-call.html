@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" class="html" data-theme="light"><head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>
+    
+      Cara Kerja Linux System Call
+    
+  </title>
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Cara Kerja Linux System Call" />
+<meta name="author" content="Rafael Putra" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Beberapa hari terakhir saya iseng membaca source code linux dari github dan secara khusus tertarik dengan bahasan system call. Maka pada tulisan kali ini, saya tuliskan sedikit catatan tentang cara kerja syscall." />
+<meta property="og:description" content="Beberapa hari terakhir saya iseng membaca source code linux dari github dan secara khusus tertarik dengan bahasan system call. Maka pada tulisan kali ini, saya tuliskan sedikit catatan tentang cara kerja syscall." />
+<link rel="canonical" href="http://localhost:4000/cara-kerja-linux-system-call" />
+<meta property="og:url" content="http://localhost:4000/cara-kerja-linux-system-call" />
+<meta property="og:site_name" content="Rafael Putra" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-07-25T00:00:00+07:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Cara Kerja Linux System Call" />
+<meta name="twitter:site" content="@__rafaelputra" />
+<meta name="twitter:creator" content="@Rafael Putra" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Rafael Putra"},"dateModified":"2024-07-25T00:00:00+07:00","datePublished":"2024-07-25T00:00:00+07:00","description":"Beberapa hari terakhir saya iseng membaca source code linux dari github dan secara khusus tertarik dengan bahasan system call. Maka pada tulisan kali ini, saya tuliskan sedikit catatan tentang cara kerja syscall.","headline":"Cara Kerja Linux System Call","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/cara-kerja-linux-system-call"},"url":"http://localhost:4000/cara-kerja-linux-system-call"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Rafael Putra" />
+
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/assets/images/favicon/site.webmanifest">
+  <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="/assets/images/favicon/favicon.ico">
+  <meta name="msapplication-TileColor" content="#00aba9">
+  <meta name="msapplication-config" content="/assets/images/favicon/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <!-- Favicon -->
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  
+    <script type="text/javascript">
+  window.addEventListener('load', themeChange);
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme)
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+  function themeChange() {
+    let button = document.querySelector('.theme-toggle');
+
+    button.addEventListener('click', function (e) {
+      let currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        transition();
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        transition();
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    let transition = () => {
+      document.documentElement.classList.add('transition');
+      window.setTimeout(() => {
+        document.documentElement.classList.remove('transition');
+      }, 1000);
+    }
+  }
+</script>
+
+
+  
+</head>
+<body>
+    <main class="page-content" aria-label="Content">
+      <div class="w">
+        <a href="/">cd ..</a>
+<h1 class="post-title">Cara Kerja Linux System Call</h1>
+<p class="post-date text-bold">
+  
+    <span class="text-upcase">Rafael Putra</span> / 
+  
+  
+    <span class="text-upcase">July 2024</span>
+  
+
+
+  
+  
+  (1433 Words, 
+  8 Minutes)
+  
+
+</p>
+
+<div class="soopr-btn"
+   data-twitter="SooprCo"
+>
+</div>
+
+
+  <div class="">
+    
+  </div>
+
+
+<p>Beberapa hari terakhir saya iseng membaca <em>source code</em> linux dari github dan secara khusus tertarik dengan bahasan system call. Maka pada tulisan kali ini, saya tuliskan sedikit catatan tentang cara kerja syscall.</p>
+
+<h2 id="linux-vs-gnulinux">Linux vs GNU/Linux</h2>
+<p>Terdapat kesalahpahaman tentang dua hal ini, maka sebelum memahami lebih jauh tentang linux, alangkah baiknya kita perbaiki hal ini terlebih dahulu. Ketika yang menjadi pokok bahasan adalah linux, itu hanya merujuk pada kernelnya saja, bukan sebagai sistem operasi. Hal ini sering menjadi miskonsepsi, seolah-olah keduanya sama, padahal memiliki pengertian masing-masing. Linux merupakan kernel atau inti pada suatu sistem operasi yang dikembangkan oleh Linus Torvalds pada 1991 dan didistribusikan secara bebas. GNU/Linux adalah sistem operasi yang dikembangkan oleh Richard Stallman dari Free Software Foundation yang menggunakan kernel linux.</p>
+
+<h2 id="kernel">Kernel</h2>
+<p align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Kernel_Layout.svg/300px-Kernel_Layout.svg.png" /></p>
+<p>Semua sistem operasi memiliki kernel, karena kernel menjadi inti dari sistem operasi. Ketika kita mengakses aplikasi tertentu, aplikasi tersebut akan menggunakan kernel sebagai perantara antara aplikasi dengan <i>hardware</i> komputer.</p>
+<p align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Priv_rings.svg/300px-Priv_rings.svg.png" /></p>
+<p>Pada gambar terlihat bahwa pada <i>kernel mode</i> memiliki <i>privileged</i> yang lebih tinggi dibandingkan menggunakan <i>user mode</i>, karena pada <i>kernel mode</i> langsung berhadapan dengan fungsi-fungsi komputer. Ketika kita menggunakan aplikasi, kita berada pada <i>user mode</i> kemudian aplikasi tersebut akan mengakses kernel sehingga beralih menjadi <i>kernel mode</i> untuk mengakses beberapa fungsi kernel, setelah berhasil mengakses fungsi kernel yang digunakan aplikasi, maka outputnya akan di <i>return</i> ke <i>user mode</i> lagi. .</p>
+
+<h2 id="system-call">System Call</h2>
+<p><img src="https://linux-kernel-labs.github.io/refs/heads/master/_images/ditaa-48374873962ca32ada36c14ab9a83b60f112a1e0.png" alt="System call" />
+Setiap aplikasi akan selalu mengakses <em>kernel mode</em> sehingga perlu suatu <em>handler</em> untuk menangani perubahan hak akses dari <em>user mode</em> ke <em>kernel mode</em>. Pada linux, dikenal dengan system call/syscall yang membuat proses pergantian hak akses tersebut terjadi. Ketika <em>user</em> menggunakan syscall maka akan ada perubahan <em>privileged</em> menjadi <em>kernel mode</em>. Jika menggunakan mekanisme pada pengembangan web, syscall mirip sekali dengan <em>API</em> (<em>Application Programming Interface</em>) yang menjadi perantara antara <em>user</em> dengan server.</p>
+
+<p>Pada linux, syscall dideklarasikan berdasarkan urutan angka, sehingga ketika kita ingin menggunakan syscall, kita hanya akan mengakses nomor syscall yang akan digunakan saja. Perlu diperhatikan juga, linux mendukung banyak sekali arsitektur komputer dan setiap arsitektur komputer memiliki angka syscall yang berbeda (seperti pada arsitektur x86 dengan x86_64). Nomor syscall bisa dilihat pada <code class="language-plaintext highlighter-rouge">/usr/include/x86_64-linux-gnu/asm/unistd_64.h</code> untuk arsitektur x86_64, atau <code class="language-plaintext highlighter-rouge">/usr/include/x86_64-linux-gnu/asm/unistd_32.h</code> untuk arsitektur x86. Setiap fungsi syscall terdapat <em>handler</em> untuk disambungkan dengan nomor syscall. Contohnya pada syscall write, berada pada nomor 1, dengan handler sys_write.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#define __NR_read 0
+#define __NR_write 1
+#define __NR_open 2
+#define __NR_close 3
+#define __NR_stat 4
+#define __NR_fstat 5
+#define __NR_lstat 6
+#define __NR_poll 7
+#define __NR_lseek 8
+#define __NR_mmap 9
+#define __NR_mprotect 10
+#define __NR_munmap 11
+#define __NR_brk 12
+#define __NR_rt_sigaction 13
+#define __NR_rt_sigprocmask 14
+#define __NR_rt_sigreturn 15
+...
+</code></pre></div></div>
+
+<h3 id="register-arguments">Register Arguments</h3>
+<p>Setiap syscall memiliki aturan penggunaan yang berbeda-beda yang diimplementasikan pada parameter. Aturan ini dituliskan pada <a href="https://elixir.bootlin.com/linux/v6.10/source/arch/x86/entry/entry_64.S">entry</a> linux source code.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> * Registers on entry:
+ * rax  system call number
+ * rcx  return address
+ * r11  saved rflags (note: r11 is callee-clobbered register in C ABI)
+ * rdi  arg0
+ * rsi  arg1
+ * rdx  arg2
+ * r10  arg3 (needs to be moved to rcx to conform to C ABI)
+ * r8   arg4
+ * r9   arg5
+</code></pre></div></div>
+<p>Nomor syscall yang akan digunakan harus dimasukkan ke dalam register rax, kemudian diikuti parameter lain yang secara berurutan dimasukkan ke dalam register rdi, rsi, rdx, dan seterusnya. Untuk melihat parameter fungsi-fungsi syscall, bisa gunakan perintah <code class="language-plaintext highlighter-rouge">man 2</code> dan diikuti nama fungsi syscallnya, contohnya ketika ingin mengetahui parameter apa yang dibutuhkan pada write , bisa gunakan <code class="language-plaintext highlighter-rouge">man 2 write</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>write(2)                   System Calls Manual
+
+NAME
+       write - write to a file descriptor
+
+LIBRARY
+       Standard C library (libc, -lc)
+
+SYNOPSIS
+       #include &lt;unistd.h&gt;
+
+       ssize_t write(int fd, const void buf[.count], size_t count);
+
+</code></pre></div></div>
+<p>Pada fungsi write, dibutuhkan tiga parameter</p>
+
+<p><code class="language-plaintext highlighter-rouge">ssize_t write(int fd, const void buf[.count], size_t count);</code></p>
+
+<ul>
+  <li>rdi harus berisi fd (file descriptor)</li>
+  <li>rsi harus berisi buffer</li>
+  <li>rdx harus berisi ukuran buffer dari rsi</li>
+</ul>
+
+<p>Selain menggunakan perintah <code class="language-plaintext highlighter-rouge">man</code>, bisa gunakan website <a href="https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md">ini</a> untuk mengetahui parameter yang harus digunakan suatu syscall.</p>
+
+<h3 id="penggunaan-syscall-pada-c">Penggunaan Syscall pada C</h3>
+<p>Kita bisa lakukan percobaan untuk menggunakan syscall dengan bahasa pemrograman C, hal ini bisa terjadi karena pada libc terdapat fungsi <code class="language-plaintext highlighter-rouge">syscall</code> untuk mengakses syscall pada linux.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;unistd.h&gt;
+#include &lt;sys/syscall.h&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+	<span class="n">syscall</span><span class="p">(</span><span class="n">SYS_write</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"Hello, World!</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="mi">14</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Kita bisa memahami fungsi syscall tersebut dengan melihat isi fungsi <code class="language-plaintext highlighter-rouge">syscall</code> pada <a href="https://github.com/lattera/glibc/blob/master/sysdeps/unix/sysv/linux/x86_64/syscall.S">glibc</a>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	.text
+ENTRY (syscall)
+	movq %rdi, %rax		/* Syscall number -&gt; rax.  */
+	movq %rsi, %rdi		/* shift arg1 - arg5.  */
+	movq %rdx, %rsi
+	movq %rcx, %rdx
+	movq %r8, %r10
+	movq %r9, %r8
+	movq 8(%rsp),%r9	/* arg6 is on the stack.  */
+	syscall			/* Do the system call.  */
+	cmpq $-4095, %rax	/* Check %rax for error.  */
+	jae SYSCALL_ERROR_LABEL	/* Jump to error handler if error.  */
+	ret			/* Return to caller.  */
+
+PSEUDO_END (syscall)
+</code></pre></div></div>
+<p>Fungsi <code class="language-plaintext highlighter-rouge">syscall</code> pada libc tersebut mengikuti aturan x86_64 ABI sesuai dengan aturan penggunaannya. Setiap argument yang digunakan pada fungsi <code class="language-plaintext highlighter-rouge">syscall</code> di C akan dimasukkan ke dalam register-register yang telah ditetapkan oleh linux. SYS_write akan bernilai satu karena pada angka syscall di arsitektur x86_64 bernilai satu, kemudian diikuti register rdi, rsi, dan rdx.</p>
+
+<h3 id="penggunaan-syscall-pada-assembly">Penggunaan Syscall pada Assembly</h3>
+<p>Syscall juga dapat diimplementasikan pada assembly. Saya membuat file assembly x86_64 sederhana yang menggunakan syscall <em>write</em> untuk mencetak <em>string</em> ke layar.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>; test.S
+
+.section .text
+.global _start
+_start:
+	movq $1, %rax
+	movq $1, %rdi
+	movq $msg, %rsi
+	movq $14, %rdx
+	syscall
+
+	movq $60, %rax
+	movq $0, %rdi
+	syscall
+
+.section .data
+msg: .string "Hello, World!\n"
+</code></pre></div></div>
+<p>Kita <em>compile</em> dengan gcc menggunakan argument static agar file binary-nya menjadi statically linked (tidak menggunakan dynamic library).</p>
+
+<p><code class="language-plaintext highlighter-rouge">gcc -static -nostartfiles test.S -o test</code></p>
+
+<p>Kita bisa cek <em>syscall</em> apa saja yang digunakan dalam menjalankan program tersebut menggunakan <em>strace</em>.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>strace ./test
+execve<span class="o">(</span><span class="s2">"./test"</span>, <span class="o">[</span><span class="s2">"./test"</span><span class="o">]</span>, 0x7ffdfe6d5150 /<span class="k">*</span> 47 vars <span class="k">*</span>/<span class="o">)</span> <span class="o">=</span> 0
+write<span class="o">(</span>1, <span class="s2">"Hello, World!</span><span class="se">\n</span><span class="s2">"</span>, 14Hello, World!
+<span class="o">)</span>         <span class="o">=</span> 14
+<span class="nb">exit</span><span class="o">(</span>0<span class="o">)</span>                                 <span class="o">=</span> ?
++++ exited with 0 +++
+
+</code></pre></div></div>
+<p>Dapat kita lihat bahwa syscall yang digunakan adalah syscall <em>write</em> dan <em>exit</em>.</p>
+
+<h2 id="penulisan-syscall-pada-linux">Penulisan Syscall Pada Linux</h2>
+<p>Setiap syscall didefinisikan pada setiap folder di <em>kernel source code</em> sesuai fungsi masing-masing. Misalnya pada syscall <em>read</em>, berada pada folder <code class="language-plaintext highlighter-rouge">fs/read_write.c</code>.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">SYSCALL_DEFINE3</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="k">return</span> <span class="n">ksys_read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Setiap syscall dituliskan menggunakan fungsi <code class="language-plaintext highlighter-rouge">SYSCALL_DEFINE</code>, lalu isi dari fungsi syscall tersebut akan masuk ke fungsi ksys yang berisi <em>source code</em> proses <em>read</em> berlangsung. Angka tiga pada <code class="language-plaintext highlighter-rouge">SYSCALL_DEFINE</code> menandakan jumlah parameter yang digunakan syscall tersebut.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">ssize_t</span> <span class="nf">ksys_read</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">char</span> <span class="n">__user</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="k">struct</span> <span class="n">fd</span> <span class="n">f</span> <span class="o">=</span> <span class="n">fdget_pos</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+	<span class="kt">ssize_t</span> <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="n">EBADF</span><span class="p">;</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">loff_t</span> <span class="n">pos</span><span class="p">,</span> <span class="o">*</span><span class="n">ppos</span> <span class="o">=</span> <span class="n">file_ppos</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">);</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">ppos</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">pos</span> <span class="o">=</span> <span class="o">*</span><span class="n">ppos</span><span class="p">;</span>
+			<span class="n">ppos</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">pos</span><span class="p">;</span>
+		<span class="p">}</span>
+		<span class="n">ret</span> <span class="o">=</span> <span class="n">vfs_read</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">ppos</span><span class="p">);</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">ppos</span><span class="p">)</span>
+			<span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="o">-&gt;</span><span class="n">f_pos</span> <span class="o">=</span> <span class="n">pos</span><span class="p">;</span>
+		<span class="n">fdput_pos</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Ketika komputer booting pertama kali, kernel akan menginisialisasi syscall <em>handler</em> yang disimpan pada register MSR_LSTAR. Untuk mengatur register MSR_LSTAR, digunakan fungsi wrmsrl, yang memasukkan alamat dari entry point untuk syscall x86_64.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wrmsrl(MSR_LSTAR, (unsigned long)entry_SYSCALL_64);
+</code></pre></div></div>
+<p>Instruksi syscall akan digunakan sebagai <em>trap</em> ke <em>kernel mode</em> untuk melakukan syscall, kemudian CPU akan memeriksa isi dari register MSR_LSTAR yang didalamnya terdapat alamat syscall handler (<em>entry_SYSCALL_64</em>). <em>Entry point</em> akan menyimpan nilai-nilai register yang digunakan sebagai syscall <em>number</em> dan parameter-parameter syscall ke dalam <em>stack</em> pada <em>kernel mode</em>. Setelah itu akan masuk ke dalam syscall dispatcher <a href="https://elixir.bootlin.com/linux/v6.10/source/arch/x86/entry/common.c#L76">do_syscall_64</a> untuk memeriksa syscall <em>number</em> dan parameter yang digunakan, misalnya, ketika menggunakan syscall <em>number</em> 1, maka dari syscall dispatcher tersebut akan langsung mengarah ke fungsi kernel untuk <em>write</em>. Nilai register rax akan dimasukkan ke dalam <em>stack</em> (struct pt_regs) diikuti oleh alamat dari semua parameter yang digunakan, setelah semuanya diolah, maka outputnya akan disimpan pada rax. Dan akan berpindah lagi menjadi <em>user mode</em> dengan instruksi SYSRET/IRET</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SYM_INNER_LABEL(entry_SYSCALL_64_after_hwframe, SYM_L_GLOBAL)
+	pushq	%rax					/* pt_regs-&gt;orig_ax */
+
+	PUSH_AND_CLEAR_REGS rax=$-ENOSYS
+
+	/* IRQs are off. */
+	movq	%rsp, %rdi
+	/* Sign extend the lower 32bit as syscall numbers are treated as int */
+	movslq	%eax, %rsi
+
+	/* clobbers %rax, make sure it is after saving the syscall nr */
+	IBRS_ENTER
+	UNTRAIN_RET
+	CLEAR_BRANCH_HISTORY
+
+	call	do_syscall_64		/* returns with IRQs disabled */
+</code></pre></div></div>
+
+<h2 id="referensi">Referensi</h2>
+<p><a href="https://elixir.bootlin.com/linux/v6.10/source">Linux v6.10 Source Code</a></p>
+
+<p><a href="https://linux-kernel-labs.github.io/refs/heads/master/index.html">Linux kernel labs</a></p>
+
+<p><a href="https://blog.packagecloud.io/the-definitive-guide-to-linux-system-calls/">The Definitive Guide to Linux System Calls</a></p>
+
+<p><a href="https://0xax.gitbooks.io/linux-insides/content/">Linux Inside: System Calls</a></p>
+
+<p><a href="https://gitlab.com/x86-psABIs/x86-64-ABI">System V ABI x86_64</a></p>
+
+<p><a href="https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md">Linux System Call Table</a></p>
+
+
+        
+          <button title="Toggle Theme" class="theme-toggle">
+  <svg viewBox="0 0 32 32" width="24" height="24" fill="currentcolor">
+    <circle cx="16" cy="16" r="14" fill="none" stroke="currentcolor" stroke-width="4"></circle>
+    <path d="
+             M 16 0
+             A 16 16 0 0 0 16 32
+             z">
+    </path>
+  </svg>
+</button>
+
+        
+        <div class="credits">&copy;&nbsp;2024&nbsp;Rafael Putra
+          &nbsp;</div>
+      </div>
+    </main><script async defer src="https://sdk.soopr.co/soopr.js"></script></body>
+</html>
