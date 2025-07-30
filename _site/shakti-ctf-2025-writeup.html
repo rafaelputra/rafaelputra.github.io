@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en" class="html" data-theme="light"><head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>
+    
+      Shakti CTF 2025 Writeup
+    
+  </title>
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Shakti CTF 2025 Writeup" />
+<meta name="author" content="Rafael Putra" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Hari Jumat, 25 Juli 2025 hingga Sabtu, 26 Juli 2025 kemarin saya mengikuti kompetisi CTF Shakti 2025 dan berhasil menyelesaikan beberapa tantangan web, reverse engineering, dan satu soal forensic. Namun karena server webnya sudah tidak bisa diakses kembali dan saya lupa untuk menyimpan beberapa screenshot soal-soalnya, saya hanya menuliskan writeup forensic dan reverse engineering saja." />
+<meta property="og:description" content="Hari Jumat, 25 Juli 2025 hingga Sabtu, 26 Juli 2025 kemarin saya mengikuti kompetisi CTF Shakti 2025 dan berhasil menyelesaikan beberapa tantangan web, reverse engineering, dan satu soal forensic. Namun karena server webnya sudah tidak bisa diakses kembali dan saya lupa untuk menyimpan beberapa screenshot soal-soalnya, saya hanya menuliskan writeup forensic dan reverse engineering saja." />
+<link rel="canonical" href="http://localhost:4000/shakti-ctf-2025-writeup" />
+<meta property="og:url" content="http://localhost:4000/shakti-ctf-2025-writeup" />
+<meta property="og:site_name" content="Rafael Putra" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-07-28T00:00:00+07:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Shakti CTF 2025 Writeup" />
+<meta name="twitter:site" content="@__rafaelputra" />
+<meta name="twitter:creator" content="@Rafael Putra" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Rafael Putra"},"dateModified":"2025-07-28T00:00:00+07:00","datePublished":"2025-07-28T00:00:00+07:00","description":"Hari Jumat, 25 Juli 2025 hingga Sabtu, 26 Juli 2025 kemarin saya mengikuti kompetisi CTF Shakti 2025 dan berhasil menyelesaikan beberapa tantangan web, reverse engineering, dan satu soal forensic. Namun karena server webnya sudah tidak bisa diakses kembali dan saya lupa untuk menyimpan beberapa screenshot soal-soalnya, saya hanya menuliskan writeup forensic dan reverse engineering saja.","headline":"Shakti CTF 2025 Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/shakti-ctf-2025-writeup"},"url":"http://localhost:4000/shakti-ctf-2025-writeup"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Rafael Putra" />
+
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/assets/images/favicon/site.webmanifest">
+  <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+  <link rel="shortcut icon" href="/assets/images/favicon/favicon.ico">
+  <meta name="msapplication-TileColor" content="#00aba9">
+  <meta name="msapplication-config" content="/assets/images/favicon/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
+  <!-- Favicon -->
+
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  
+    <script type="text/javascript">
+  window.addEventListener('load', themeChange);
+  const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+  if (currentTheme)
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+  function themeChange() {
+    let button = document.querySelector('.theme-toggle');
+
+    button.addEventListener('click', function (e) {
+      let currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        transition();
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        transition();
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    let transition = () => {
+      document.documentElement.classList.add('transition');
+      window.setTimeout(() => {
+        document.documentElement.classList.remove('transition');
+      }, 1000);
+    }
+  }
+</script>
+
+
+  
+</head>
+<body>
+    <main class="page-content" aria-label="Content">
+      <div class="w">
+        <a href="/">cd ..</a>
+<h1 class="post-title">Shakti CTF 2025 Writeup</h1>
+<p class="post-date text-bold">
+  
+    <span class="text-upcase">Rafael Putra</span> / 
+  
+  
+    <span class="text-upcase">July 2025</span>
+  
+
+
+  
+  
+  (5394 Words, 
+  30 Minutes)
+  
+
+</p>
+
+<div class="soopr-btn"
+   data-twitter="SooprCo"
+>
+</div>
+
+
+  <div class="">
+    
+  </div>
+
+
+<p>Hari Jumat, 25 Juli 2025 hingga Sabtu, 26 Juli 2025 kemarin saya mengikuti kompetisi CTF Shakti 2025 dan berhasil menyelesaikan beberapa tantangan web, reverse engineering, dan satu soal forensic. Namun karena server webnya sudah tidak bisa diakses kembali dan saya lupa untuk menyimpan beberapa screenshot soal-soalnya, saya hanya menuliskan writeup forensic dan reverse engineering saja.</p>
+
+<h2 id="forensic">Forensic</h2>
+
+<h3 id="glitch-in-frame">Glitch In Frame</h3>
+
+<h3 id="deskripsi">Deskripsi</h3>
+<p>Kael intercepted a strange transmission. Nyra says it’s just a looped diagnostic — but something feels off. Can you find the hidden message?</p>
+
+<h3 id="solusi">Solusi</h3>
+<p>Diberikan file ZIP yang didalamnya terdapat file PCAP. File PCAP (Packet Caputre) adalah format file untuk menyimpan paket dari lalu lintas jaringan. File tersebut bisa kita analisis dengan Wireshark.</p>
+
+<p><a href="../images/shakti-ctf-2025-writeup/pcap.png" target="_blank">
+<img src="../images/shakti-ctf-2025-writeup/pcap.png" alt="" />
+</a></p>
+
+<p>Dari gambar terlihat terdapat komunikasi TCP (local) terjadi antara dua port 50511 dan 9988, kita dapat analisis lebih lanjut dengan klik salah satu packet pada protocol TCP, lalu klik kanan &gt; Follow &gt; Follow TCP Stream.</p>
+
+<p><a href="../images/shakti-ctf-2025-writeup/tcpstream.png" target="_blank">
+<img src="../images/shakti-ctf-2025-writeup/tcpstream.png" alt="" />
+</a></p>
+
+<p>Terdapat komunikasi antara Nyra dengan Kael, pada komunikasi tersebut terlihat Nyra mengirim suatu file pada Kael, dan dapat dilihat terdapat awalan GIF89a yang jika mengacu pada <a href="https://en.wikipedia.org/wiki/List_of_file_signatures">Wikipedia</a>, ini merupakan signature untuk file GIF, sehingga bisa disimpulkan file yang dikirim ini adalah file GIF. Selanjutnya ekstrak GIF tersebut dari file PCAP dengan foremost.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ foremost chall.pcap
+</code></pre></div></div>
+
+<p>Didapatkan file GIF yang ternyata berisi flagnya.</p>
+
+<p><img src="../images/shakti-ctf-2025-writeup/flag.gif" alt="" /></p>
+
+<p>File GIF bekerja dengan menggabungkan beberapa frame gambar dalam satu file, gunakan python untuk mengekstrak keselurahan frame GIF untuk mempermudah mendapatkan flag.</p>
+
+<p><img src="../images/shakti-ctf-2025-writeup/flag_forensic.png" alt="" /></p>
+
+<h2 id="reverse-engineering">Reverse Engineering</h2>
+
+<h3 id="googoogaagaa">gooGOOgaaGAA</h3>
+
+<h3 id="solusi-1">Solusi</h3>
+
+<p>Diberikan file googoogaagaa.py, analisis isinya</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gaga</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)]))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="n">key</span> <span class="o">=</span> <span class="s">"IWANTMOMOS"</span>
+
+<span class="n">encrypted</span><span class="o">=</span> <span class="p">[</span><span class="s">':'</span><span class="p">,</span> <span class="s">'?'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'%'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'$'</span><span class="p">,</span> <span class="s">','</span><span class="p">,</span> <span class="s">'9'</span><span class="p">,</span> <span class="s">')'</span><span class="p">,</span> <span class="s">'('</span><span class="p">,</span> <span class="s">'+'</span><span class="p">,</span> <span class="s">'c'</span><span class="p">,</span> <span class="s">'#'</span><span class="p">,</span> <span class="s">'7'</span><span class="p">,</span> <span class="s">'</span><span class="se">\x06</span><span class="s">'</span><span class="p">,</span> <span class="s">'~'</span><span class="p">,</span> <span class="s">'9'</span><span class="p">,</span> <span class="s">'</span><span class="se">\x12</span><span class="s">'</span><span class="p">,</span> <span class="s">'~'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'</span><span class="se">\x16</span><span class="s">'</span><span class="p">,</span> <span class="s">'4'</span><span class="p">,</span> <span class="s">'4'</span><span class="p">,</span> <span class="s">':'</span><span class="p">,</span> <span class="s">'g'</span><span class="p">,</span> <span class="s">'0'</span><span class="p">]</span>
+<span class="n">inp</span><span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">"&gt; "</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">gaga</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span><span class="o">==</span><span class="n">encrypted</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"YOU DID ITTT :))"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"try again :("</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Berikut cara kerja program tersebut:</p>
+<ul>
+  <li>Program menerima input pengguna dan menyimpannya ke dalam variabel inp</li>
+  <li>Input pengguna akan dicek bersama dengan variabel key ke dalam fungsi gaga dan dibandingkan hasilnya apakah sama seperti pada variabel encrypted.</li>
+  <li>Fungsi gaga menerima dua argumen, text dan key. Variabel result diinisialisasi di awal sebagai array kosong untuk mengisi hasil XOR antara text dengan key. Terlihat bahwa key diakses dengan <code class="language-plaintext highlighter-rouge">key[i % len(key)]</code> yang menangani apabila text lebih panjang dari key maka key akan diulang.</li>
+</ul>
+
+<p>Dari soal seperti ini, bisa diasumsikan flagnya berada pada variabel encrypted. Buat solver script dengan python, untuk menyelesaikannya hanya perlu dilakukan XOR antara variabel encrypted dengan key.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="n">encrypted</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s">''</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">encrypted</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">encrypted</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)]))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="n">encrypted</span> <span class="o">=</span> <span class="p">[</span><span class="s">':'</span><span class="p">,</span> <span class="s">'?'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'%'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'$'</span><span class="p">,</span> <span class="s">','</span><span class="p">,</span> <span class="s">'9'</span><span class="p">,</span> <span class="s">')'</span><span class="p">,</span> <span class="s">'('</span><span class="p">,</span> <span class="s">'+'</span><span class="p">,</span> <span class="s">'c'</span><span class="p">,</span> <span class="s">'#'</span><span class="p">,</span> <span class="s">'7'</span><span class="p">,</span> <span class="s">'</span><span class="se">\x06</span><span class="s">'</span><span class="p">,</span> <span class="s">'~'</span><span class="p">,</span> <span class="s">'9'</span><span class="p">,</span> <span class="s">'</span><span class="se">\x12</span><span class="s">'</span><span class="p">,</span> <span class="s">'~'</span><span class="p">,</span> <span class="s">' '</span><span class="p">,</span> <span class="s">'</span><span class="se">\x16</span><span class="s">'</span><span class="p">,</span> <span class="s">'4'</span><span class="p">,</span> <span class="s">'4'</span><span class="p">,</span> <span class="s">':'</span><span class="p">,</span> <span class="s">'g'</span><span class="p">,</span> <span class="s">'0'</span><span class="p">]</span>
+<span class="n">key</span> <span class="o">=</span> <span class="s">"IWANTMOMOS"</span>
+
+<span class="n">plaintext</span> <span class="o">=</span> <span class="n">decrypt</span><span class="p">(</span><span class="n">encrypted</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Flag:"</span><span class="p">,</span> <span class="n">plaintext</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Ketika solver dijalankan, didapatkan flagnya</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>python3 solver.py 
+Flag: shaktictf<span class="o">{</span>b4byR3v_1s_cut3<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="opensesame">OpenSesame</h3>
+
+<h3 id="deskripsi-1">Deskripsi</h3>
+
+<p>You discover the secret treasure in a thieves’ den, what might the magic password be?</p>
+
+<h3 id="solusi-2">Solusi</h3>
+
+<p>Diberikan file OpenSesame, hal pertama yang perlu dilakukan adalah identifikasi file.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ file OpenSesame
+OpenSesame: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=ae018dbaad720ec966ba2b6048c0985194bc9842, for GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>File ELF (Executable Linkable Format) 64-bit yang merupakan executable di sistem operasi GNU/Linux (EXE di Windows), dengan binary yang not stripped yang menandakan tidak adanya penghapusan simbol seperti nama fungsi. Langsung coba jalankan programnya.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./OpenSesame
+~Speak the magic words And Enter~
+Your answer: 
+test
+The thieves spot you at the cave. Run!
+</code></pre></div></div>
+
+<p>Program sederhana yang meminta input pengguna, jika input valid, bisa didapatkan flagnya. Lanjutkan analisis secara statis dengan decompiler IDA. Hal pertama yang wajib dianalisis adalah logika utama dari program, beberapa bahasa pemrograman menggunakan fungsi main sebagai fungsi pertama yang akan dieksekusi sekaligus logika utama dari program.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="kr">__fastcall</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">**</span><span class="n">envp</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">v3</span><span class="p">;</span> <span class="c1">// ebx</span>
+  <span class="kt">int</span> <span class="n">v4</span><span class="p">;</span> <span class="c1">// ebx</span>
+  <span class="kt">int</span> <span class="n">v5</span><span class="p">;</span> <span class="c1">// ebx</span>
+  <span class="kt">int</span> <span class="n">v6</span><span class="p">;</span> <span class="c1">// ebx</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// [rsp+0h] [rbp-1F0h]</span>
+  <span class="kt">int</span> <span class="n">j</span><span class="p">;</span> <span class="c1">// [rsp+4h] [rbp-1ECh]</span>
+  <span class="kt">int</span> <span class="n">k</span><span class="p">;</span> <span class="c1">// [rsp+8h] [rbp-1E8h]</span>
+  <span class="kt">int</span> <span class="n">m</span><span class="p">;</span> <span class="c1">// [rsp+Ch] [rbp-1E4h]</span>
+  <span class="kt">int</span> <span class="n">n</span><span class="p">;</span> <span class="c1">// [rsp+10h] [rbp-1E0h]</span>
+  <span class="kt">int</span> <span class="n">ii</span><span class="p">;</span> <span class="c1">// [rsp+14h] [rbp-1DCh]</span>
+  <span class="kt">int</span> <span class="n">jj</span><span class="p">;</span> <span class="c1">// [rsp+18h] [rbp-1D8h]</span>
+  <span class="kt">int</span> <span class="n">kk</span><span class="p">;</span> <span class="c1">// [rsp+1Ch] [rbp-1D4h]</span>
+  <span class="n">_DWORD</span> <span class="n">v16</span><span class="p">[</span><span class="mi">48</span><span class="p">];</span> <span class="c1">// [rsp+20h] [rbp-1D0h]</span>
+  <span class="n">_DWORD</span> <span class="n">v17</span><span class="p">[</span><span class="mi">48</span><span class="p">];</span> <span class="c1">// [rsp+E0h] [rbp-110h]</span>
+  <span class="kt">char</span> <span class="n">s</span><span class="p">[</span><span class="mi">56</span><span class="p">];</span> <span class="c1">// [rsp+1A0h] [rbp-50h] BYREF</span>
+  <span class="kt">unsigned</span> <span class="n">__int64</span> <span class="n">v19</span><span class="p">;</span> <span class="c1">// [rsp+1D8h] [rbp-18h]</span>
+
+  <span class="n">v19</span> <span class="o">=</span> <span class="n">__readfsqword</span><span class="p">(</span><span class="mh">0x28u</span><span class="p">);</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">345</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">312</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">291</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">321</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">348</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="mi">297</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="mi">348</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mi">306</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="mi">369</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">216</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span> <span class="o">=</span> <span class="mi">147</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">15</span><span class="p">]</span> <span class="o">=</span> <span class="mi">147</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span> <span class="o">=</span> <span class="mi">147</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">18</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span> <span class="o">=</span> <span class="mi">315</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">20</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="mi">282</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">22</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">23</span><span class="p">]</span> <span class="o">=</span> <span class="mi">282</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">25</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span> <span class="o">=</span> <span class="mi">153</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">27</span><span class="p">]</span> <span class="o">=</span> <span class="mi">150</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">28</span><span class="p">]</span> <span class="o">=</span> <span class="mi">156</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">29</span><span class="p">]</span> <span class="o">=</span> <span class="mi">153</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">30</span><span class="p">]</span> <span class="o">=</span> <span class="mi">150</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">31</span><span class="p">]</span> <span class="o">=</span> <span class="mi">156</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">32</span><span class="p">]</span> <span class="o">=</span> <span class="mi">150</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">33</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">34</span><span class="p">]</span> <span class="o">=</span> <span class="mi">153</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">35</span><span class="p">]</span> <span class="o">=</span> <span class="mi">330</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">36</span><span class="p">]</span> <span class="o">=</span> <span class="mi">318</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">37</span><span class="p">]</span> <span class="o">=</span> <span class="mi">144</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">38</span><span class="p">]</span> <span class="o">=</span> <span class="mi">363</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">39</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">40</span><span class="p">]</span> <span class="o">=</span> <span class="mi">342</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">41</span><span class="p">]</span> <span class="o">=</span> <span class="mi">153</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">42</span><span class="p">]</span> <span class="o">=</span> <span class="mi">354</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">43</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">44</span><span class="p">]</span> <span class="o">=</span> <span class="mi">282</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">45</span><span class="p">]</span> <span class="o">=</span> <span class="mi">285</span><span class="p">;</span>
+  <span class="n">v17</span><span class="p">[</span><span class="mi">46</span><span class="p">]</span> <span class="o">=</span> <span class="mi">375</span><span class="p">;</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"~Speak the magic words And Enter~"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"Your answer: "</span><span class="p">);</span>
+  <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+  <span class="n">seed_one</span><span class="p">();</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">j</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">v3</span> <span class="o">=</span> <span class="n">v16</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">^</span> <span class="n">v3</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">seed_two</span><span class="p">();</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">k</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">v4</span> <span class="o">=</span> <span class="n">v16</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">^</span> <span class="n">v4</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">seed_one</span><span class="p">();</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">m</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">v5</span> <span class="o">=</span> <span class="n">v16</span><span class="p">[</span><span class="n">m</span><span class="p">];</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">^</span> <span class="n">v5</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">seed_two</span><span class="p">();</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">n</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">v6</span> <span class="o">=</span> <span class="n">v16</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">^</span> <span class="n">v6</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">ii</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_rotate</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)</span><span class="n">v16</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="mi">3LL</span><span class="p">);</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">jj</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">jj</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">jj</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">r_rotate</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)</span><span class="n">v16</span><span class="p">[</span><span class="n">jj</span><span class="p">],</span> <span class="mi">35LL</span><span class="p">);</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">kk</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">kk</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">kk</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="n">v16</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span> <span class="o">!=</span> <span class="n">v17</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span> <span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">puts</span><span class="p">(</span><span class="s">"The thieves spot you at the cave. Run!"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"boop you have gold now"</span><span class="p">);</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Mari analisis apa yang terjadi pada fungsi main. Terdapat inisialisasi nilai pada v17, simpan untuk saat ini, mungkin nanti diperlukan untuk menyelesaikan challenge-nya. Dari fungsi main tersebut program menerima input string (<a href="&quot;https://www.geeksforgeeks.org/c/format-specifiers-in-c/&quot;">format specifier</a> %s) melalui perintah scanf dan nilainya disimpan dengan variabel s.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">puts</span><span class="p">(</span><span class="s">"~Speak the magic words And Enter~"</span><span class="p">);</span>
+  <span class="n">puts</span><span class="p">(</span><span class="s">"Your answer: "</span><span class="p">);</span>
+  <span class="n">__isoc99_scanf</span><span class="p">(</span><span class="s">"%s"</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Kemudian program mengakses semua input tersebut dan dimasukkan ke dalam variabel v16 dalam bentuk array. Sekarang nilai v16 sama seperti s (input).</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>Setelah fungsi for terjadi pemanggilan fungsi seed_one dan dilanjutkan dengan fungsi for kembali. Pada fungsi for tersebut, v3 menyimpan nilai sementara dari setiap array variabel v16, kemudian dilakukan operasi XOR per karakter v16 dengan fungsi <a href="https://en.cppreference.com/w/c/numeric/random/rand.html">rand</a> untuk menghasilkan <a href="https://en.wikipedia.org/wiki/Pseudorandom_number_generator">pseudo-random number</a>.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">for</span> <span class="p">(</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">j</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">v3</span> <span class="o">=</span> <span class="n">v16</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">()</span> <span class="o">^</span> <span class="n">v3</span><span class="p">;</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Selanjutnya program mengulangi hal yang sama tiga kali dengan menggunakan seed yang berbeda (seed_one dan seed_two). Fungsi rand tidak akan menghasilkan angka acak jika tidak menggunakan seed yang diinisialisasi dengan srand, berikut adalah isi dari seed_one dan seed_two</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">seed_one</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">srand</span><span class="p">(</span><span class="mh">0x4F347u</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">seed_two</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">srand</span><span class="p">(</span><span class="mh">0x59334u</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Pada bagian selanjutnya, program tetap mengakses v16 yang tadi sudah di acak nilainya dengan XOR dan rand beberapa kali, kemudian memanggil fungsi l_rotate dan r_rotate</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span> <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">ii</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">ii</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_rotate</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)</span><span class="n">v16</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="mi">3LL</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span> <span class="n">jj</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">jj</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">jj</span> <span class="p">)</span>
+    <span class="n">v16</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="nf">r_rotate</span><span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)</span><span class="n">v16</span><span class="p">[</span><span class="n">jj</span><span class="p">],</span> <span class="mi">35LL</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Fungsi l_rotate dan r_rotate menerima dua argumen, v16 dan jumlah bit yang ingin dishift kekiri dan kekanan, serta bilangan yang hilang setelah dishift akan ditempatkan pada bagian kanan <code class="language-plaintext highlighter-rouge">(a1 &gt;&gt; (32 -a2))</code> dan <code class="language-plaintext highlighter-rouge">(a1 &lt;&lt; (32 - a2))</code> kemudian digabung dengan hasil dari shift <code class="language-plaintext highlighter-rouge">(a1 &lt;&lt; a2)</code> dan <code class="language-plaintext highlighter-rouge">(a1 &gt;&gt; a2)</code></p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">__int64</span> <span class="kr">__fastcall</span> <span class="nf">l_rotate</span><span class="p">(</span><span class="kt">int</span> <span class="n">a1</span><span class="p">,</span> <span class="kt">char</span> <span class="n">a2</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">a1</span> <span class="o">&lt;&lt;</span> <span class="n">a2</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">a1</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">32</span> <span class="o">-</span> <span class="n">a2</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">__int64</span> <span class="kr">__fastcall</span> <span class="nf">r_rotate</span><span class="p">(</span><span class="kt">int</span> <span class="n">a1</span><span class="p">,</span> <span class="kt">char</span> <span class="n">a2</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">a1</span> <span class="o">&gt;&gt;</span> <span class="n">a2</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">a1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">32</span> <span class="o">-</span> <span class="n">a2</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Terakhir, program akan melakukan pengecekan nilai v16 yang sudah dilakukan operasi XOR dengan rand dan l_rotate maupun r_rotate dengan v17.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="k">for</span> <span class="p">(</span> <span class="n">kk</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">kk</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="o">++</span><span class="n">kk</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="n">v16</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span> <span class="o">!=</span> <span class="n">v17</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span> <span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">puts</span><span class="p">(</span><span class="s">"The thieves spot you at the cave. Run!"</span><span class="p">);</span>
+      <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Buat solver script dengan python untuk mendapatkan flagnya, v17 adalah hasil akhir dari flagnya, untuk mendapatkan flagnya perlu membalik beberapa operasi seperti l_rotate dan r_rotate, penggunaan seed dan implementasi rand(), serta XOR.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Ekstrak nilai v17 yang didefinisikan di awal program
+</span><span class="n">v17</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mi">345</span><span class="p">,</span> <span class="mi">312</span><span class="p">,</span> <span class="mi">291</span><span class="p">,</span> <span class="mi">321</span><span class="p">,</span> <span class="mi">348</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">297</span><span class="p">,</span> <span class="mi">348</span><span class="p">,</span> <span class="mi">306</span><span class="p">,</span> <span class="mi">369</span><span class="p">,</span>
+    <span class="mi">216</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">147</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">147</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">147</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span> <span class="mi">315</span><span class="p">,</span>
+    <span class="mi">285</span><span class="p">,</span> <span class="mi">282</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">282</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">156</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span>
+    <span class="mi">150</span><span class="p">,</span> <span class="mi">156</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">330</span><span class="p">,</span> <span class="mi">318</span><span class="p">,</span> <span class="mi">144</span><span class="p">,</span> <span class="mi">363</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span>
+    <span class="mi">342</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">354</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">282</span><span class="p">,</span> <span class="mi">285</span><span class="p">,</span> <span class="mi">375</span>
+<span class="p">]</span>
+
+<span class="c1"># Tulis ulang fungsi r_rotate dan l_rotate
+</span><span class="k">def</span> <span class="nf">r_rotate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">bits</span><span class="p">):</span>
+    <span class="n">bits</span> <span class="o">%=</span> <span class="mi">32</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">val</span> <span class="o">&gt;&gt;</span> <span class="n">bits</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">32</span> <span class="o">-</span> <span class="n">bits</span><span class="p">)))</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFFF</span>
+
+<span class="k">def</span> <span class="nf">l_rotate</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">bits</span><span class="p">):</span>
+    <span class="n">bits</span> <span class="o">%=</span> <span class="mi">32</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">val</span> <span class="o">&lt;&lt;</span> <span class="n">bits</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">32</span> <span class="o">-</span> <span class="n">bits</span><span class="p">)))</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFFF</span>
+
+<span class="c1"># Fungsi for terakhir yang mengakses l_rotate dan 
+# r_rotate perlu ditulis ulang dalam posisi dibalik 
+</span><span class="k">def</span> <span class="nf">reverse_transform</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="c1"># Pada for terakhir terdapat operasi perkalian
+</span>    <span class="c1"># v16[jj] = 3 * r_rotate((unsigned int)v16[jj], 35LL);
+</span>    <span class="c1"># Dibalik menjadi x // 3 (pembagian)
+</span>    <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">//</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+
+    <span class="c1"># Terdapat r_rotate(v16[jj], 35)
+</span>    <span class="c1"># Dibalik dengan l_rotate dengan 
+</span>    <span class="c1"># mencari 35 % 32 (karena hanya berlaku pada
+</span>    <span class="c1"># 32 bit)
+</span>    <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">l_rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">35</span> <span class="o">%</span> <span class="mi">32</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+
+    <span class="c1"># Terdapat l_rotate((unsigned int)v16[ii], 3LL); 
+</span>    <span class="c1"># Dibalik dengan r_rotate
+</span>    <span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="n">r_rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">v</span>
+
+<span class="c1"># Implementasi rand sama seperti pada C
+</span><span class="k">def</span> <span class="nf">simple_rand</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">seed</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="c1"># Linear Congruential Generator (LCG) untuk menghasilkan
+</span>        <span class="c1"># pseudo-random number
+</span>        <span class="n">state</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span> <span class="o">*</span> <span class="mi">1103515245</span> <span class="o">+</span> <span class="mi">12345</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7FFFFFFF</span>
+        <span class="n">result</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">def</span> <span class="nf">get_flag</span><span class="p">():</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">reverse_transform</span><span class="p">(</span><span class="n">v17</span><span class="p">)</span>
+
+    <span class="c1"># Urutan seed yang dipakai di program
+</span>    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x4F347</span><span class="p">,</span> <span class="mh">0x59334</span><span class="p">,</span> <span class="mh">0x4F347</span><span class="p">,</span> <span class="mh">0x59334</span><span class="p">]</span>
+    <span class="n">rand_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Ambil semua angka rand sesuai urutan pemanggilan
+</span>    <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">:</span>
+        <span class="n">rand_numbers</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="n">simple_rand</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+
+    <span class="c1"># XOR dengan urutan dibalik
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rand_numbers</span><span class="p">))):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">v</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">^=</span> <span class="n">rand_numbers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">flag</span> <span class="o">=</span> <span class="s">''</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">x</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flag</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"Flag:"</span><span class="p">,</span> <span class="n">get_flag</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>Ketika solvernya dijalankan, didapatkan flagnya</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>python3 solver.py 
+Flag: shaktictf<span class="o">{</span>Hii1i1i1ii_^_^__3243242_3nj0y_r3v_^_<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="uwuwuwuwu">Uwuwuwuwu</h3>
+
+<h3 id="solusi-3">Solusi</h3>
+
+<p>Saya menyelesaikan challenge ini setelah kompetisinya selesai. Diberikan file chall, identifikasi filenya</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>file chall
+chall: ELF 64-bit LSB pie executable, x86-64, version 1 <span class="o">(</span>SYSV<span class="o">)</span>, dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]<span class="o">=</span>49c838c2f24aa4e7621c785b3e91bff12304aaaf, <span class="k">for </span>GNU/Linux 3.2.0, not stripped
+</code></pre></div></div>
+
+<p>File ELF 64 bit not stripped, decompile fungsi main dengan IDA.</p>
+
+<p><a href="../images/shakti-ctf-2025-writeup/decompiled_main_uwu.png" target="_blank">
+<img src="../images/shakti-ctf-2025-writeup/decompiled_main_uwu.png" alt="" />
+</a></p>
+
+<p>Program melakukan pengecekan argumen saat program dijalankan (argc &lt;= 1), jika tidak ada argumen tambahan saat program dijalankan, maka program akan exit. Kemudian program akan mengonversi argv[1] (argumen pertama saat program dijalankan) menjadi integer dalam basis 10 dan menyimpannya ke dalam v4, sehingga v4 adalah input pengguna. Lalu terdapat perintah if yang membandingkan nilai dari <code class="language-plaintext highlighter-rouge">verify_key(v4) != 1</code> (true), maka akan exit, dan jika <code class="language-plaintext highlighter-rouge">verify_key(v4)</code> bernilai true, maka program akan lanjut ke baris setelahnya. Selanjutnya coba analisis verify_key untuk mengetahui apa yang dilakukan oleh fungsi tersebut terhadap input pengguna.</p>
+
+<p><a href="../images/shakti-ctf-2025-writeup/verify_key.png" target="_blank">
+<img src="../images/shakti-ctf-2025-writeup/verify_key.png" alt="" />
+</a></p>
+
+<p>Dari fungsi verify_key tersebut terdapat inisialisasi array v4 dan v3. Kemudian input pengguna (a1) dimasukkan ke dalam for dan dilakukan pengecekan melalui if, jika <code class="language-plaintext highlighter-rouge">a1 % v4[i]</code> nilainya tidak sesuai dengan v3[i] maka akan return 0 beserta output “Nope”. Berikut penggambarannya.</p>
+
+<p>Untuk i=0: if (a1 % 123 == 92)</p>
+
+<p>Untuk i=1: if (a1 % 456 != 29)</p>
+
+<p>Dan seterusnya</p>
+
+<p>Sehingga kita perlu mencari a1 yang tepat untuk memenuhi kondisi if tersebut agar ketika a1 dibagi menjadi v4[i] sisa hasil baginya adalah v3[i]. Persoalan seperti ini bisa diselesaikan dengan <a href="https://www.geeksforgeeks.org/maths/chinese-remainder-theorem/">Chinese Remainder Theorem (CRT)</a>, kita bisa gunakan python, ekstrak nilai v3 dan v4-nya, lalu gunakan CRT untuk menemukan a1 yang memenuhi semua kondisi tersebut.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sympy.ntheory.modular</span> <span class="kn">import</span> <span class="n">crt</span>
+
+<span class="n">v4</span> <span class="o">=</span> <span class="p">[</span><span class="mi">123</span><span class="p">,</span> <span class="mi">456</span><span class="p">,</span> <span class="mi">789</span><span class="p">,</span> <span class="mi">987</span><span class="p">,</span> <span class="mi">654</span><span class="p">,</span> <span class="mi">321</span><span class="p">]</span>
+<span class="n">v3</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">92</span><span class="p">,</span>  <span class="mi">29</span><span class="p">,</span> <span class="mi">380</span><span class="p">,</span>   <span class="mi">2</span><span class="p">,</span> <span class="mi">497</span><span class="p">,</span> <span class="mi">296</span><span class="p">]</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">crt</span><span class="p">(</span><span class="n">v4</span><span class="p">,</span> <span class="n">v3</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">f"a1: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Ketika kode python tersebut dijalankan, maka didapatkan a1 = 2147491901. Setelah memasukkan nilai a1 tersebut, program tidak menampilkan output “Nope” yang menandakan a1-nya sesuai, namun program nampaknya terus berjalan ketika a1 tersebut dimasukkan, coba lanjutkan analisis fungsi main setelah verify_key bernilai true.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">v5</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mh">0xFA00uLL</span><span class="p">);</span>
+  <span class="n">initialise_shellcode</span><span class="p">(</span><span class="n">v5</span><span class="p">);</span>
+  <span class="n">shellcode</span> <span class="o">=</span> <span class="n">generate_shellcode</span><span class="p">(</span><span class="n">v4</span><span class="p">,</span> <span class="n">v5</span><span class="p">);</span>
+  <span class="n">wx_shellcode</span><span class="p">(</span><span class="n">shellcode</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Terdapat inisialisasi memori dengan malloc sebesar 0xFA00 byte (64KB) dan menyimpannya pada pointer v5. Kemudian terdapat pemanggilan fungsi initialise_shellcode(v5), ketika ingin mendecompile fungsi initialise_shellcode, muncul error decompilation failure: too big function, hal ini mungkin terjadi karena isi fungsi initialise_shellcode terlalu besar sehingga IDA tidak bisa menanganinya, namun tetap bisa membuka hasil disassembly fungsi initialise_shellcode tersebut.</p>
+
+<p><img src="../images/shakti-ctf-2025-writeup/initialise_shellcode.png" alt="" /></p>
+
+<p>Dari gambar tersebut kita bisa melihat panjang isi fungsi tersebut. Setelah diteliti lebih lanjut, ternyata isi fungsi initialise_shellcode hanya melakukan pengulangan tertentu. Bagian teratas fungsi initialise_shellcode akan melakukan setup stack dan register</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>push    rbp
+mov     rbp, rsp
+push    r15
+push    r14
+push    r13
+push    r12
+push    rbx
+</code></pre></div></div>
+
+<p>Kemudian di baris selanjutnya mengolah data dari rdi (nilai dari v5) dan menyimpannya pada rbp+var_30.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>; rbp+var_30 = v5
+mov     [rbp+var_30], rdi 
+; rax = v5
+mov     rax, [rbp+var_30]
+; ebx = 80002042h (konstan)
+mov     ebx, 80002042h    
+; Tulis 8 byte ke offset 0
+mov     [rax], rbx        
+
+; rax = rbp+var_30
+mov     rax, [rbp+var_30] 
+; rax += 8 (offset)
+add     rax, 8            
+; r15d = 80002078h (konstan)
+mov     r15d, 80002078h   
+; Tulis 4 byte ke offset 8
+mov     [rax], r15d       
+
+mov     rax, [rbp+var_30]
+add     rax, 10h
+mov     ebx, 80002071h
+mov     [rax], rbx
+
+mov     rax, [rbp+var_30]
+add     rax, 18h
+mov     esi, 8000207Bh
+mov     [rax], rsi
+
+mov     rax, [rbp+var_30]
+add     rax, 20h ; ' '
+mov     r8d, 8000203Fh
+mov     [rax], r8
+
+...
+</code></pre></div></div>
+
+<p>Terjadi pengulangan terus menerus, sehingga dapat disimpulkan fungsi initialise_shellcode tersebut mengisi nilai konstan ke dalam malloc dari v5. Kemudian lanjutkan analisis fungsi main.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">shellcode</span> <span class="o">=</span> <span class="n">generate_shellcode</span><span class="p">(</span><span class="n">v4</span><span class="p">,</span> <span class="n">v5</span><span class="p">);</span>
+  <span class="n">wx_shellcode</span><span class="p">(</span><span class="n">shellcode</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Terdapat dua fungsi, generate_shellcode yang menerima argumen input (v4) dengan malloc (v5) yang disimpan ke dalam variabel shellcode, kemudian variabel tersebut dipanggil dengan fungsi wx_shellcode. Pada fungsi generate_shellcode, terdapat alokasi memori dengan malloc sebesar 0x1CD8, kemudian kedua argumen (a1 dan a2) akan dimasukkan ke fungsi for sebanyak 7384 perulangan, didalam fungsi tersebut terjadi operasi XOR antara a2 (mengambil 8 byte) dengan nilai dari a1 (input)</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_BYTE</span> <span class="o">*</span><span class="kr">__fastcall</span> <span class="nf">generate_shellcode</span><span class="p">(</span><span class="kt">char</span> <span class="n">a1</span><span class="p">,</span> <span class="n">__int64</span> <span class="n">a2</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// [rsp+14h] [rbp-Ch]</span>
+  <span class="n">_BYTE</span> <span class="o">*</span><span class="n">v4</span><span class="p">;</span> <span class="c1">// [rsp+18h] [rbp-8h]</span>
+
+  <span class="n">v4</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mh">0x1CD8uLL</span><span class="p">);</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">7383</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+    <span class="n">v4</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">^=</span> <span class="o">*</span><span class="p">(</span><span class="mi">8LL</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">a2</span><span class="p">)</span> <span class="o">^</span> <span class="n">a1</span><span class="p">;</span>
+  <span class="k">return</span> <span class="n">v4</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Selanjutnya pada fungsi wx_shellcode, terjadi pembentukan file baru bernama slippery_shellcode yang berisi shellcode yang sudah dibuat di fungsi generate_shellcode.</p>
+
+<p><img src="../images/shakti-ctf-2025-writeup/wx_shellcode.png" alt="" /></p>
+
+<p>Ketika program menghasilkan a1 yang sesuai, maka program akan membuat file baru bernama sliperry_shellcode. Maka lanjutkan dengan analisis file sliperry_shellcode.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>file slippery_shellcode
+slippery_shellcode: ELF 64-bit LSB pie executable, x86-64, version 1 <span class="o">(</span>SYSV<span class="o">)</span>, statically linked, no section header
+</code></pre></div></div>
+
+<p>Ternyata program tadi membuat file ELF 64 bit dengan no section header, cek apakah file tersebut dipack dengan perintah strings</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+UPX!
+UPX!
+</code></pre></div></div>
+
+<p>Dibaris terakhir perintah strings terdapat tanda bahwa file sliperry_shellcode ini di pack dengan UPX, kita perlu mengunpack file tersebut dengan <a href="https://github.com/upx/upx">UPX</a>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>upx <span class="nt">-d</span> slippery_shellcode
+</code></pre></div></div>
+
+<p>Setelah berhasil diunpack, buka file sliperry_shellcode ke IDA dan decompile fungsi main.</p>
+
+<p><img src="../images/shakti-ctf-2025-writeup/decompiled_main_shellcode.png" alt="" /></p>
+
+<p>Program tersebut menerima input pengguna berupa string, kemudian cek panjang string apakah kurang dari 91, jika panjangnya kurang dari 91, maka program akan exit, dan jika lebih dari 91, perintah-perintah di baris selanjutnya akan dijalankan. Variabel random_nums menyimpan nilai dari fungsi generate_random_nums, mari analisis fungsi tersebut.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_DWORD</span> <span class="o">*</span><span class="nf">generate_random_nums</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// [rsp+4h] [rbp-1Ch]</span>
+  <span class="n">_DWORD</span> <span class="o">*</span><span class="n">v2</span><span class="p">;</span> <span class="c1">// [rsp+8h] [rbp-18h]</span>
+
+  <span class="n">v2</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mh">0x170uLL</span><span class="p">);</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">91</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+    <span class="n">v2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand</span><span class="p">();</span>
+  <span class="k">return</span> <span class="n">v2</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Dari fungsi tersebut terdapat pembentukan alokasi memori dengan malloc sebesar 0x170, kemudian dilakukan operasi for sampai 92, serta mengisi nilai v2 dengan rand().</p>
+
+<p>Selanjutnya variabel v5 diisi dengan fungsi string_to_int yang akan mengubah input menjadi integer. Kemudian terdapat pemanggilan fungsi encrypt_input yang akan melakukan operasi XOR setiap 4 byte antara v5 dengan random_nums.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_DWORD</span> <span class="o">*</span><span class="kr">__fastcall</span> <span class="nf">encrypt_input</span><span class="p">(</span><span class="n">__int64</span> <span class="n">a1</span><span class="p">,</span> <span class="n">__int64</span> <span class="n">a2</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">_DWORD</span> <span class="o">*</span><span class="n">result</span><span class="p">;</span> <span class="c1">// rax</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// [rsp+1Ch] [rbp-4h]</span>
+
+  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">91</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4LL</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">a1</span><span class="p">);</span>
+    <span class="o">*</span><span class="n">result</span> <span class="o">^=</span> <span class="o">*</span><span class="p">(</span><span class="mi">4LL</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">a2</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Selanjutnya terdapat fungsi verify_flag yang akan memvalidasi apakah input kita sesuai dengan encrypted_flag. Terlihat bahwa terjadi xor antara a1 dengan nilai-nilai yang berada pada encrypted_flag, jika hasilnya tidak sama, maka akan return 0.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">__int64</span> <span class="kr">__fastcall</span> <span class="nf">verify_flag</span><span class="p">(</span><span class="n">__int64</span> <span class="n">a1</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> <span class="c1">// [rsp+1Ch] [rbp-4h]</span>
+
+  <span class="k">for</span> <span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">91</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span> <span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="n">xor</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="mi">4LL</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">a1</span><span class="p">),</span> <span class="n">encrypted_flag</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span> <span class="p">)</span>
+      <span class="k">return</span> <span class="mi">0LL</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">1LL</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Cek nilai encrypted_flag.</p>
+
+<p><a href="../images/shakti-ctf-2025-writeup/encrypted_flag.png" target="_blank">
+<img src="../images/shakti-ctf-2025-writeup/encrypted_flag.png" alt="" />
+</a></p>
+
+<p>Secara keseluruhan program sliperry_shellcode akan meminta input pengguna, melakukan xor dengan rand kemudian dicek setelah di XOR dengan rand apakah nilainya sama seperti encrypted_flag. Untuk menyelesaikan challenge ini bisa dengan mengambil seluruh nilai encrypted_flag kemudian XOR dengan rand, tetapi kita perlu mencari seed yang sesuai untuk mendapatkan rand yang sama seperti program. Dari fungsi main juga tidak terlihat inisialisasi srand dengan seed tertentu, maka kita perlu cari seed tersebut sebelum fungsi main dipanggil, cek pada bagian <code class="language-plaintext highlighter-rouge">_start</code></p>
+
+<pre><code class="language-asm">xor     ebp, ebp
+mov     r9, rdx         ; rtld_fini
+pop     rsi             ; argc
+mov     rdx, rsp        ; ubp_av
+and     rsp, 0FFFFFFFFFFFFFFF0h
+push    rax
+push    rsp             ; stack_end
+xor     r8d, r8d        ; fini
+xor     ecx, ecx        ; init
+lea     rdi, main       ; main
+call    cs:__libc_start_main_ptr
+</code></pre>
+
+<p>Coba cek fungsi init</p>
+
+<pre><code class="language-asm">push    rbp
+mov     rbp, rsp
+mov     edi, 4545h      ; seed
+call    _srand
+nop
+pop     rbp
+retn
+</code></pre>
+
+<p>Terdapat pemanggilan fungsi srand dengan seed 0x4545, ini bisa kita gunakan untuk mendapatkan flag. Buat solver dengan python.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">ctypes</span>
+
+<span class="c1"># Ekstrak nilai encrypted_flag
+</span><span class="n">encrypted_flag</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mh">0x5093A472</span><span class="p">,</span> <span class="mh">0x06D32C90</span><span class="p">,</span> <span class="mh">0x6AE1B35A</span><span class="p">,</span> <span class="mh">0x7A658197</span><span class="p">,</span> <span class="mh">0x0E3CC12F</span><span class="p">,</span>
+    <span class="mh">0x2DF74860</span><span class="p">,</span> <span class="mh">0x7A9E978A</span><span class="p">,</span> <span class="mh">0x121FA3A5</span><span class="p">,</span> <span class="mh">0x2B2F5ADA</span><span class="p">,</span> <span class="mh">0x400C2D44</span><span class="p">,</span>
+    <span class="mh">0x323D7D84</span><span class="p">,</span> <span class="mh">0x0B343F1E</span><span class="p">,</span> <span class="mh">0x425336C1</span><span class="p">,</span> <span class="mh">0x5A0EE279</span><span class="p">,</span> <span class="mh">0x74DDA8AA</span><span class="p">,</span>
+    <span class="mh">0x79124CE3</span><span class="p">,</span> <span class="mh">0x6197E690</span><span class="p">,</span> <span class="mh">0x1543F6A8</span><span class="p">,</span> <span class="mh">0x38EE57DD</span><span class="p">,</span> <span class="mh">0x4D606612</span><span class="p">,</span>
+    <span class="mh">0x1CCF1581</span><span class="p">,</span> <span class="mh">0x2956795C</span><span class="p">,</span> <span class="mh">0x51A48068</span><span class="p">,</span> <span class="mh">0x5EBBC210</span><span class="p">,</span> <span class="mh">0x4B35434A</span><span class="p">,</span>
+    <span class="mh">0x51707BC4</span><span class="p">,</span> <span class="mh">0x05124C52</span><span class="p">,</span> <span class="mh">0x0E74D996</span><span class="p">,</span> <span class="mh">0x6A50A234</span><span class="p">,</span> <span class="mh">0x513A4E22</span><span class="p">,</span>
+    <span class="mh">0x1E8E74DB</span><span class="p">,</span> <span class="mh">0x3AE4466C</span><span class="p">,</span> <span class="mh">0x580D7A82</span><span class="p">,</span> <span class="mh">0x097027AD</span><span class="p">,</span> <span class="mh">0x3549C82E</span><span class="p">,</span>
+    <span class="mh">0x664A3C66</span><span class="p">,</span> <span class="mh">0x37677055</span><span class="p">,</span> <span class="mh">0x2FE86060</span><span class="p">,</span> <span class="mh">0x7869E07E</span><span class="p">,</span> <span class="mh">0x6296CAA3</span><span class="p">,</span>
+    <span class="mh">0x6FF48D44</span><span class="p">,</span> <span class="mh">0x2AA75E7E</span><span class="p">,</span> <span class="mh">0x6DCB0988</span><span class="p">,</span> <span class="mh">0x3247C383</span><span class="p">,</span> <span class="mh">0x04B6405B</span><span class="p">,</span>
+    <span class="mh">0x62A8B241</span><span class="p">,</span> <span class="mh">0x2B5A10C4</span><span class="p">,</span> <span class="mh">0x664E26D5</span><span class="p">,</span> <span class="mh">0x77ECA91C</span><span class="p">,</span> <span class="mh">0x644868F9</span><span class="p">,</span>
+    <span class="mh">0x33AE8D2B</span><span class="p">,</span> <span class="mh">0x14BBBF7E</span><span class="p">,</span> <span class="mh">0x0D9EE1A7</span><span class="p">,</span> <span class="mh">0x05530DD0</span><span class="p">,</span> <span class="mh">0x737781D8</span><span class="p">,</span>
+    <span class="mh">0x58D4248E</span><span class="p">,</span> <span class="mh">0x56C38974</span><span class="p">,</span> <span class="mh">0x7889CDB2</span><span class="p">,</span> <span class="mh">0x6748FE96</span><span class="p">,</span> <span class="mh">0x41142BF6</span><span class="p">,</span>
+    <span class="mh">0x49C41C6F</span><span class="p">,</span> <span class="mh">0x05D773DF</span><span class="p">,</span> <span class="mh">0x7BF871A1</span><span class="p">,</span> <span class="mh">0x21D19684</span><span class="p">,</span> <span class="mh">0x0F479BED</span><span class="p">,</span>
+    <span class="mh">0x31423A6C</span><span class="p">,</span> <span class="mh">0x081BD337</span><span class="p">,</span> <span class="mh">0x46AF0BDA</span><span class="p">,</span> <span class="mh">0x612A9A42</span><span class="p">,</span> <span class="mh">0x0085B321</span><span class="p">,</span>
+    <span class="mh">0x2945D659</span><span class="p">,</span> <span class="mh">0x511F27F4</span><span class="p">,</span> <span class="mh">0x2B2D111D</span><span class="p">,</span> <span class="mh">0x1710E008</span><span class="p">,</span> <span class="mh">0x0366EB1D</span><span class="p">,</span>
+    <span class="mh">0x2FE351CE</span><span class="p">,</span> <span class="mh">0x79B992AA</span><span class="p">,</span> <span class="mh">0x2EC0FC01</span><span class="p">,</span> <span class="mh">0x163178D8</span><span class="p">,</span> <span class="mh">0x71A63C60</span><span class="p">,</span>
+    <span class="mh">0x130964D2</span><span class="p">,</span> <span class="mh">0x49E005E6</span><span class="p">,</span> <span class="mh">0x0661FB5D</span><span class="p">,</span> <span class="mh">0x20A846DE</span><span class="p">,</span> <span class="mh">0x4F331319</span><span class="p">,</span>
+    <span class="mh">0x79D97C84</span><span class="p">,</span> <span class="mh">0x797C6B12</span><span class="p">,</span> <span class="mh">0x25F69CAD</span><span class="p">,</span> <span class="mh">0x72634A1C</span><span class="p">,</span> <span class="mh">0x60C56A33</span><span class="p">,</span>
+    <span class="mh">0x670AC85B</span><span class="p">,</span> <span class="mh">0x3C2766AC</span>
+<span class="p">]</span>
+
+<span class="c1"># Seed dari init
+</span><span class="n">seed</span> <span class="o">=</span> <span class="mh">0x4545</span>
+
+<span class="c1"># Inisialisasi srand dengan seed yang ditentukan
+</span><span class="n">libc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="p">.</span><span class="n">CDLL</span><span class="p">(</span><span class="s">"libc.so.6"</span><span class="p">)</span>
+<span class="n">libc</span><span class="p">.</span><span class="n">srand</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+<span class="c1"># Decrypt
+</span><span class="n">decrypted</span> <span class="o">=</span> <span class="s">b''</span>
+
+<span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">encrypted_flag</span><span class="p">:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">rand</span><span class="p">()</span>
+    <span class="c1"># XOR dengan hasil rand()
+</span>    <span class="n">decrypted_block</span> <span class="o">=</span> <span class="n">block</span> <span class="o">^</span> <span class="n">r</span>
+    <span class="n">decrypted</span> <span class="o">+=</span> <span class="n">decrypted_block</span><span class="p">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s">'little'</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">decrypted</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Setelah solver script tersebut dijalankan, didapatkan flagnya</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>python3 solver.py 
+w3ll_w3ll_w3ll...y0u_h4ve_manag3d_t0_tackle_s0m3_of_my_t0ugher_tr4ps.G0od_job!_ke3p_g0ing_:<span class="o">)</span>
+</code></pre></div></div>
+
+
+        
+          <button title="Toggle Theme" class="theme-toggle">
+  <svg viewBox="0 0 32 32" width="24" height="24" fill="currentcolor">
+    <circle cx="16" cy="16" r="14" fill="none" stroke="currentcolor" stroke-width="4"></circle>
+    <path d="
+             M 16 0
+             A 16 16 0 0 0 16 32
+             z">
+    </path>
+  </svg>
+</button>
+
+        
+        <div class="credits">&copy;&nbsp;2025&nbsp;Rafael Putra
+          &nbsp;</div>
+      </div>
+    </main><script async defer src="https://sdk.soopr.co/soopr.js"></script></body>
+</html>
