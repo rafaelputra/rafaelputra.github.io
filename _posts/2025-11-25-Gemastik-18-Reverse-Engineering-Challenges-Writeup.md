@@ -1,7 +1,7 @@
 ---
 layout: post
 author: Rafael Putra
-title: Gemastik 18 Reverse Engineering Challenges Writeup
+title: Gemastik 18 Reversing Challenges Writeup
 ---
 
 Gemastik divisi keamanan siber tahun ini diselenggarakan pada 30 Agustus 2025, terdapat beberapa kategori soal, namun saya hanya mengerjakan kategori reverse engineering saja. Terdapat dua soal, soal pertama sudah saya selesaikan tepat waktu, namun untuk soal kedua berhasil saya selesaikan setelah kompetisi berakhir.
@@ -409,8 +409,8 @@ _DWORD *__fastcall sub_4012F0(_DWORD *a1, _DWORD *a2)
 
 sub_4012F0 berfungsi untuk mentransformasikan input pengguna, berikut adalah analisisnya:
 
-* Saat index <= 10, terdapat operasi rotate left v9 = ((2 * (*v14 - v8)) | ((*v14 - v8) >> 7)) - 5
-* Saat index > 10, terdapat operasi rotate right v9 = ((16 * (*v14 - v8 + 1)) | ((*v14 - v8 + 1) >> 4)) ^ 0x7A
+* Saat index <= 10, terdapat operasi rotate left `v9 = ((2 * (*v14 - v8)) | ((*v14 - v8) >> 7)) - 5`
+* Saat index > 10, terdapat operasi rotate right `v9 = ((16 * (*v14 - v8 + 1)) | ((*v14 - v8 + 1) >> 4)) ^ 0x7A`
 * Saat v8 & 1 == 0 (genap), terdapat operasi negasi, shifting, dan rotasi
 * Saat index == 4, maka nilai output = 74 - v9
 * Saat index != 4, maka nilai output = v8 + v9 + 45
@@ -489,4 +489,8 @@ for i, c_byte in enumerate(ciphertext):
 print("Flag:", "".join(plaintext))
 ```
 
-Setelah script tersebut dijalankan, didapatkan flagnya GEMASTIK18{S1mpl3_P4ck3r_f0r_4_S1mpl3_Ch4ll3nge}
+Setelah script tersebut dijalankan, didapatkan flagnya
+
+<a href="../images/gemastik-18-reverse-engineering-challenges-writeup/flag.png" target="_blank">
+![](../images/gemastik-18-reverse-engineering-challenges-writeup/flag.png)
+</a>
