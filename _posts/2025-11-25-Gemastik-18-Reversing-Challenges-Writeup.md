@@ -225,8 +225,8 @@ Setelah menjalankan script lua tersebut, didapatkan flagnya adalah GEMASTIK18{ez
 
 Diberikan sebuah file Packs.exe, saya menggunakan Detect It Easy untuk menganalisis binary-nya.
 
-<a href="../images/gemastik-18-reverse-engineering-challenges-writeup/die.png" target="_blank">
-![](../images/gemastik-18-reverse-engineering-challenges-writeup/die.png)
+<a href="../images/gemastik-18-reversing-challenges-writeup/die.png" target="_blank">
+![](../images/gemastik-18-reversing-challenges-writeup/die.png)
 </a>
 
 Dari output Detect It Easy tersebut, diketahui bahwa binary EXE ini arsitekturnya 32 bit yang diprogram dengan C++ dan terdapat protector themida versi 3.XX. Ketika menjalankan filenya, terdapat perintah untuk memasukkan flag, dan terdapat output "Nope." lalu diakhiri dengan output "Yay!". 
@@ -247,11 +247,9 @@ Yay.
 
 Selanjutnya coba masukkan binary tersebut ke IDA.
 
-<a href="../images/gemastik-18-reverse-engineering-challenges-writeup/themida_ida.png" target="_blank">
-![](../images/gemastik-18-reverse-engineering-challenges-writeup/themida_ida.png)
+<a href="../images/gemastik-18-reversing-challenges-writeup/themida_ida.png" target="_blank">
+![](../images/gemastik-18-reversing-challenges-writeup/themida_ida.png)
 </a>
-
-:skull:
 
 Hanya terdapat tiga section di IDA, yaitu, .idata, .themida, dan .boot. Setelah melihat hasil di IDA, saya perlu melakukan unpack terlebih dahulu untuk menemukan fungsi-fungsi penting yang bisa di-decompile. Saya belum pernah mengerjakan soal serupa sehingga saya perlu membaca beberapa artikel terkait themida terlebih dahulu. Saya membuang-buang waktu melakukan debugging dengan x32dbg untuk mengetahui Original Entry Point nya, saya juga harus melakukan bypass anti-debugging menggunakan ScyllaHide, terlalu banyak waktu terbuang di sini untuk mengetahui bagaimana program bekerja. Kemudian mendekati berakhirnya kompetisi, saya mencoba untuk mencari unpacker dengan versi yang sesuai di internet, beberapa unpacker sudah saya coba namun gagal, dan akhirnya saya menemukan unpacker [unlicense](https://github.com/ergrelet/unlicense). Setelah berhasil mengunpack binary, lanjut decompile fungsi main ke IDA.
 
@@ -491,6 +489,6 @@ print("Flag:", "".join(plaintext))
 
 Setelah script tersebut dijalankan, didapatkan flagnya
 
-<a href="../images/gemastik-18-reverse-engineering-challenges-writeup/flag.png" target="_blank">
-![](../images/gemastik-18-reverse-engineering-challenges-writeup/flag.png)
+<a href="../images/gemastik-18-reversing-challenges-writeup/flag.png" target="_blank">
+![](../images/gemastik-18-reversing-challenges-writeup/flag.png)
 </a>

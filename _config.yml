@@ -2,7 +2,8 @@ title: Rafael Putra
 author: Rafael Putra
 url: https://rafaelputra.github.io # root address of the site
 description: > # description of the site (multiple lines allowed)
-  Low level programming enjoyer
+  I am an Informatics Engineering student at Universitas Negeri Semarang with a strong interest in cybersecurity and backend development. I actively participate in Capture the Flag (CTF) competitions as a member of the university team, <a href="https://thebusfactoris1.online/" target="_blank">The Bus Factor is 1</a>. You can view our team's competition history on <a href="https://ctftime.org/team/389946" target="_blank">CTFtime</a>.
+
 
 permalink: /:slug
 
